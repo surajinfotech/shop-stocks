@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suraj Infotech Shop - Cloud Stock Manager Pro</title>
+    <!-- External Libraries for Excel Export & Import -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --primary-blue: #1f497d;
+            --header-blue: #2f5597;
+            --header-green: #276a3c;
+            --btn-blue: #3b82f6;
+            --btn-red: #dc2626;
+            --btn-green: #16a34a;
+            --accent-gold: #ffc000;
+            --bg-color: #f3f4f6;
+            --border-color: #cbd5e1;
+            --summary-bg: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            background: #ffffff;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .shop-header {
+            background-color: var(--accent-gold);
+            color: #000;
+            text-align: center;
+            padding: 12px;
+            font-size: 24px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid #d97706;
+        }
+
+        .header-purchase { background-color: var(--primary-blue); color: white; }
+        .header-sale { background-color: var(--header-green); color: white; }
+        .header-stock { background-color: var(--primary-blue); color: white; }
+
+        .tab-bar {
+            display: flex;
+            background-color: #e2e8f0;
+            border-bottom: 2px solid var(--border-color);
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 10px 24px;
+            border: none;
+            background: transparent;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            color: #475569;
+        }
+
+        .tab-btn.active {
+            background-color: #ffffff;
+            color: var(--primary-blue);
+            border-bottom: 3px solid var(--btn-blue);
+        }
+
+        .tab-btn:hover:not(.active) { background-color: #cbd5e1; }
+
+        .view { display: none; padding: 24px; }
+        .view.active { display: block; }
+
+        .home-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+
+        .form-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 16px;
+        }
+
+        .form-row-header {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .badge-blue {
+            background-color: var(--btn-blue);
+            color: white;
+            padding: 8px;
+            text-align: center;
+            font-weight: bold;
+            border-radius: 4px;
+        }
+
+        .badge-yellow {
+            background-color: var(--accent-gold);
+            color: black;
+            padding: 8px;
+            text-align: center;
+            font-weight: bold;
+            border-radius: 4px;
+        }
+
+        .form-group {
+            display: grid;
+            grid-template-columns: 180px 1fr;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+
+        .form-group label {
+            background-color: #f1f5f9;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            font-weight: 600;
+            font-size: 14px;
+            color: #334155;
+        }
+
+        .form-group input, .form-group select {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-left: none;
+            font-size: 14px;
+            width: 100%;
+            outline: none;
+        }
+
+        .form-group input[readonly] { background-color: #f8fafc; }
+
+        .btn-container { display: flex; gap: 10px; margin-top: 20px; }
+
+        .action-btn {
+            flex: 1;
+            padding: 10px;
+            font-size: 15px;
+            font-weight: bold;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-pur-entry { background-color: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+        .btn-pur-entry:hover { background-color: #bfdbfe; }
+        .btn-sale-entry { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+        .btn-sale-entry:hover { background-color: #bbf7d0; }
+
+        .nav-buttons-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            justify-content: flex-start;
+        }
+
+        .arrow-btn {
+            background-color: var(--btn-blue);
+            color: white;
+            padding: 10px 14px;
+            font-size: 14px;
+            font-weight: bold;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .arrow-btn:hover { opacity: 0.9; }
+        .arrow-btn.green { background-color: var(--btn-green); }
+        .arrow-btn.red { background-color: var(--btn-red); }
+        .arrow-btn.purple { background-color: #7c3aed; }
+        .arrow-btn.teal { background-color: #0d9488; }
+        .arrow-btn.whatsapp { background-color: #25d366; color: white; }
+
+        .sync-status {
+            margin-top: 15px;
+            padding: 10px;
+            background: #f8fafc;
+            border: 1px dashed var(--border-color);
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #475569;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-layout {
+            display: grid;
+            grid-template-columns: 1fr 160px;
+            gap: 20px;
+        }
+
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th, td { border: 1px solid var(--border-color); padding: 8px 10px; text-align: center; }
+        th { background-color: var(--header-blue); color: white; font-weight: 600; }
+        .sale-table th { background-color: var(--header-green); }
+
+        tfoot tr { background-color: var(--summary-bg); font-weight: bold; color: #1e293b; }
+        tr:nth-child(even) { background-color: #f8fafc; }
+
+        /* Home Search Bar Styling */
+        .home-search-box {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 15px;
+        }
+        .home-search-input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 15px;
+            outline: none;
+        }
+        .home-search-input:focus {
+            border-color: var(--btn-blue);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+        .search-results-area {
+            margin-top: 10px;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        /* Low Stock Alert Styling */
+        tr.low-stock-alert {
+            background-color: #fef2f2 !important;
+        }
+        .stock-alert-badge {
+            background-color: #dc2626;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            margin-left: 6px;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .del-btn {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+            padding: 3px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .del-btn:hover { background-color: #fca5a5; }
+
+        .text-left { text-align: left; text-transform: capitalize; }
+        .text-right { text-align: right; }
+        .empty-msg { padding: 15px; color: #64748b; font-style: italic; }
+
+        .profit-pos { color: #16a34a; font-weight: bold; }
+        .profit-neg { color: #dc2626; font-weight: bold; }
+
+        /* Print Media Style for PDF Export */
+        @media print {
+            body { padding: 0; background: #fff; }
+            .container { border: none; box-shadow: none; max-width: 100%; }
+            .tab-bar, .nav-buttons-sidebar, .sync-status, .del-btn, .home-search-box, .btn-container { display: none !important; }
+            .table-layout { grid-template-columns: 1fr !important; }
+            .view { display: block !important; page-break-after: always; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab('home')">Home</button>
+        <button class="tab-btn" onclick="switchTab('purchase')">Purchase</button>
+        <button class="tab-btn" onclick="switchTab('sale')">Sale</button>
+        <button class="tab-btn" onclick="switchTab('stocks')">Stocks & Profit</button>
+    </div>
+
+    <!-- HOME VIEW -->
+    <div id="home-view" class="view active">
+        <div class="shop-header">Suraj Infotech Shop</div>
+        <div style="height: 15px;"></div>
+
+        <div class="home-search-box">
+            <input type="text" id="home-search" class="home-search-input" placeholder="🔍 Search Item Stock & Profit Status..." oninput="searchHomeStock()">
+            <div id="home-search-results" class="search-results-area"></div>
+        </div>
+        
+        <div class="home-grid">
+            <div class="form-card">
+                <div class="form-row-header">
+                    <div class="badge-blue">Entry Types</div>
+                    <select id="entry-type" class="badge-yellow" style="border:none; width:100%; font-size:15px;" onchange="updateFormMode()">
+                        <option value="Purchase">Purchase</option>
+                        <option value="Sale">Sale</option>
+                    </select>
+                </div>
+
+                <form id="stockForm" onsubmit="handleFormSubmit(event)">
+                    <div class="form-group">
+                        <label>S.No</label>
+                        <input type="text" id="form-sno" readonly value="1">
+                    </div>
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="date" id="form-date" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Items Name</label>
+                        <input type="text" id="form-item" placeholder="e.g. Mouse, Keyboard, Printer" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Guaranty/Non Guaranty</label>
+                        <input type="text" id="form-guaranty" placeholder="e.g. 1 Year / 6 Month / No">
+                    </div>
+                    <div class="form-group">
+                        <label>Price (₹)</label>
+                        <input type="number" id="form-price" min="0" step="any" placeholder="0.00" oninput="calculateTotal()" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Quantity</label>
+                        <input type="number" id="form-quantity" min="1" placeholder="0" oninput="calculateTotal()" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Total Amount (₹)</label>
+                        <input type="number" id="form-total" readonly value="0">
+                    </div>
+
+                    <div class="btn-container">
+                        <button type="submit" class="action-btn btn-pur-entry" id="submit-btn">Purchase Entry</button>
+                    </div>
+                </form>
+
+                <div class="sync-status">
+                    <span id="status-text">☁️ Google Sheet Connected</span>
+                    <button class="arrow-btn green" style="padding:4px 10px; font-size:12px;" onclick="loadFromCloud()">Fetch Cloud Data</button>
+                </div>
+            </div>
+
+            <div class="nav-buttons-sidebar">
+                <button class="arrow-btn" onclick="switchTab('purchase')">📦 Purchase</button>
+                <button class="arrow-btn" onclick="switchTab('sale')">🛒 Sale</button>
+                <button class="arrow-btn" onclick="switchTab('stocks')">📊 Stocks & Profit</button>
+                <button class="arrow-btn green" onclick="exportToExcel()">📊 Export Excel</button>
+                <button class="arrow-btn purple" onclick="exportToPDF()">📄 Export PDF</button>
+                <button class="arrow-btn teal" onclick="backupJSON()">💾 JSON Backup</button>
+                <button class="arrow-btn" style="background:#475569;" onclick="document.getElementById('json-input').click()">📂 JSON Import</button>
+                <button class="arrow-btn" style="background:#0284c7;" onclick="document.getElementById('excel-input').click()">📥 Excel Import</button>
+                <button class="arrow-btn whatsapp" onclick="shareWhatsApp()">💬 Share WhatsApp</button>
+                <button class="arrow-btn red" onclick="resetForm()">❌ Cancel</button>
+
+                <!-- Hidden inputs for importing -->
+                <input type="file" id="json-input" accept=".json" style="display:none;" onchange="importJSON(event)">
+                <input type="file" id="excel-input" accept=".xlsx, .xls" style="display:none;" onchange="importExcel(event)">
+            </div>
+        </div>
+    </div>
+
+    <!-- PURCHASE VIEW -->
+    <div id="purchase-view" class="view">
+        <div class="shop-header header-purchase">Purchase Items</div>
+        <div style="height: 15px;"></div>
+
+        <div class="table-layout">
+            <table>
+                <thead>
+                    <tr>
+                        <th>S.No</th>
+                        <th>Date</th>
+                        <th>Items Name</th>
+                        <th>Guaranty Non Guaranty</th>
+                        <th>Price (₹)</th>
+                        <th>Quantity</th>
+                        <th>Total Amount (₹)</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="purchase-tbody"></tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="5" class="text-right">Total Purchase:</td>
+                        <td id="pur-total-qty">0</td>
+                        <td id="pur-total-amt" class="text-right">₹ 0.00</td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <div class="nav-buttons-sidebar">
+                <button class="arrow-btn" onclick="switchTab('home')">Home</button>
+                <button class="arrow-btn" onclick="switchTab('sale')">Sale</button>
+                <button class="arrow-btn" onclick="switchTab('stocks')">Stocks</button>
+                <button class="arrow-btn green" onclick="exportToExcel()">Export Excel</button>
+                <button class="arrow-btn purple" onclick="exportToPDF()">Export PDF</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SALE VIEW -->
+    <div id="sale-view" class="view">
+        <div class="shop-header header-sale">Sale Items</div>
+        <div style="height: 15px;"></div>
+
+        <div class="table-layout">
+            <table class="sale-table">
+                <thead>
+                    <tr>
+                        <th>S.No</th>
+                        <th>Date</th>
+                        <th>Items Name</th>
+                        <th>Guaranty Non Guaranty</th>
+                        <th>Price (₹)</th>
+                        <th>Quantity</th>
+                        <th>Total Amount (₹)</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="sale-tbody"></tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="5" class="text-right">Total Sale:</td>
+                        <td id="sale-total-qty">0</td>
+                        <td id="sale-total-amt" class="text-right">₹ 0.00</td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <div class="nav-buttons-sidebar">
+                <button class="arrow-btn" onclick="switchTab('home')">Home</button>
+                <button class="arrow-btn" onclick="switchTab('purchase')">Purchase</button>
+                <button class="arrow-btn" onclick="switchTab('stocks')">Stocks</button>
+                <button class="arrow-btn green" onclick="exportToExcel()">Export Excel</button>
+                <button class="arrow-btn purple" onclick="exportToPDF()">Export PDF</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- STOCKS & PROFIT VIEW -->
+    <div id="stocks-view" class="view">
+        <div class="shop-header header-stock">Suraj Infotech Stocks & Net Profit Analysis</div>
+        <div style="height: 15px;"></div>
+
+        <div class="table-layout">
+            <table>
+                <thead>
+                    <tr>
+                        <th>S.No</th>
+                        <th>Last Date</th>
+                        <th>Items Name</th>
+                        <th>Pur Qty</th>
+                        <th>Cost Price (₹)</th>
+                        <th>Pur Amt (₹)</th>
+                        <th>Sale Qty</th>
+                        <th>Sale Price (₹)</th>
+                        <th>Sale Amt (₹)</th>
+                        <th>In Stock</th>
+                        <th>Net Profit (₹)</th>
+                    </tr>
+                </thead>
+                <tbody id="stocks-tbody"></tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3" class="text-right">Grand Total:</td>
+                        <td id="stock-total-pur">0</td>
+                        <td>-</td>
+                        <td id="stock-total-pur-amt" class="text-right">₹ 0.00</td>
+                        <td id="stock-total-sale">0</td>
+                        <td>-</td>
+                        <td id="stock-total-sale-amt" class="text-right">₹ 0.00</td>
+                        <td id="stock-total-rem"><strong>0</strong></td>
+                        <td id="stock-total-profit" class="text-right">₹ 0.00</td>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <div class="nav-buttons-sidebar">
+                <button class="arrow-btn" style="background:#64748b;" onclick="renderAllData()">Refresh</button>
+                <button class="arrow-btn" onclick="switchTab('home')">Home</button>
+                <button class="arrow-btn" onclick="switchTab('purchase')">Purchase</button>
+                <button class="arrow-btn" onclick="switchTab('sale')">Sale</button>
+                <button class="arrow-btn green" onclick="exportToExcel()">Export Excel</button>
+                <button class="arrow-btn whatsapp" onclick="shareWhatsApp()">Share WhatsApp</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxiiSJxTG59YnFza3Zgvf9f8p1B2MZ_dPFPtXYF4G1WyLNuXxoXmM2cfvXvP9plQYuj/exec";
+
+    let purchases = JSON.parse(localStorage.getItem('suraj_purchases')) || [];
+    let sales = JSON.parse(localStorage.getItem('suraj_sales')) || [];
+
+    document.getElementById('form-date').valueAsDate = new Date();
+
+    function saveData() {
+        localStorage.setItem('suraj_purchases', JSON.stringify(purchases));
+        localStorage.setItem('suraj_sales', JSON.stringify(sales));
+        syncToCloud();
+    }
+
+    function syncToCloud() {
+        document.getElementById('status-text').innerText = "⏳ Saving to Google Sheet...";
+        fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: "saveAll", purchases: purchases, sales: sales })
+        }).then(() => {
+            document.getElementById('status-text').innerText = "✅ Saved to Google Sheet";
+        }).catch(() => {
+            document.getElementById('status-text').innerText = "⚠️ Cloud Sync Failed";
+        });
+    }
+
+    function loadFromCloud() {
+        document.getElementById('status-text').innerText = "⏳ Loading from Google Sheet...";
+        fetch(GOOGLE_SCRIPT_URL)
+            .then(res => res.json())
+            .then(data => {
+                if (data.purchases && data.sales) {
+                    purchases = data.purchases;
+                    sales = data.sales;
+                    localStorage.setItem('suraj_purchases', JSON.stringify(purchases));
+                    localStorage.setItem('suraj_sales', JSON.stringify(sales));
+                    renderAllData();
+                    document.getElementById('status-text').innerText = "✅ Cloud Data Synced";
+                }
+            }).catch(() => {
+                document.getElementById('status-text').innerText = "⚠️ Load Failed";
+            });
+    }
+
+    function switchTab(tabName) {
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+
+        document.getElementById(tabName + '-view').classList.add('active');
+        
+        const btnMap = { 'home': 0, 'purchase': 1, 'sale': 2, 'stocks': 3 };
+        document.querySelectorAll('.tab-btn')[btnMap[tabName]].classList.add('active');
+
+        renderAllData();
+    }
+
+    function updateFormMode() {
+        const mode = document.getElementById('entry-type').value;
+        const btn = document.getElementById('submit-btn');
+        if (mode === 'Purchase') {
+            btn.className = 'action-btn btn-pur-entry';
+            btn.innerText = 'Purchase Entry';
+            document.getElementById('form-sno').value = purchases.length + 1;
+        } else {
+            btn.className = 'action-btn btn-sale-entry';
+            btn.innerText = 'Sale Entry';
+            document.getElementById('form-sno').value = sales.length + 1;
+        }
+    }
+
+    function calculateTotal() {
+        const p = parseFloat(document.getElementById('form-price').value) || 0;
+        const q = parseFloat(document.getElementById('form-quantity').value) || 0;
+        document.getElementById('form-total').value = (p * q).toFixed(2);
+    }
+
+    function resetForm() {
+        document.getElementById('stockForm').reset();
+        document.getElementById('form-date').valueAsDate = new Date();
+        document.getElementById('form-total').value = 0;
+        updateFormMode();
+    }
+
+    function handleFormSubmit(e) {
+        e.preventDefault();
+        const mode = document.getElementById('entry-type').value;
+        const price = parseFloat(document.getElementById('form-price').value) || 0;
+        const qty = parseInt(document.getElementById('form-quantity').value) || 0;
+        const total = price * qty;
+        const itemName = document.getElementById('form-item').value.toLowerCase().trim();
+        const guaranty = document.getElementById('form-guaranty').value || 'N/A';
+        const date = document.getElementById('form-date').value;
+
+        if (mode === 'Purchase') {
+            const existingIndex = purchases.findIndex(p => p.item.toLowerCase().trim() === itemName);
+
+            if (existingIndex !== -1) {
+                purchases[existingIndex].qty += qty;
+                purchases[existingIndex].total += total;
+                purchases[existingIndex].price = price;
+                purchases[existingIndex].date = date;
+                if (guaranty !== 'N/A') {
+                    purchases[existingIndex].guaranty = guaranty;
+                }
+                alert('Pehle se maujood item mein Quantity add ho gayi hai!');
+            } else {
+                const itemData = {
+                    id: Date.now(),
+                    sno: purchases.length + 1,
+                    date: date,
+                    item: itemName,
+                    guaranty: guaranty,
+                    price: price,
+                    qty: qty,
+                    total: total
+                };
+                purchases.push(itemData);
+                alert('Nayi Purchase entry save ho gayi!');
+            }
+        } else {
+            const existingIndex = sales.findIndex(s => s.item.toLowerCase().trim() === itemName);
+
+            if (existingIndex !== -1) {
+                sales[existingIndex].qty += qty;
+                sales[existingIndex].total += total;
+                sales[existingIndex].price = price;
+                sales[existingIndex].date = date;
+                if (guaranty !== 'N/A') {
+                    sales[existingIndex].guaranty = guaranty;
+                }
+                alert('Pehle se maujood Sale item mein Quantity add ho gayi hai!');
+            } else {
+                const itemData = {
+                    id: Date.now(),
+                    sno: sales.length + 1,
+                    date: date,
+                    item: itemName,
+                    guaranty: guaranty,
+                    price: price,
+                    qty: qty,
+                    total: total
+                };
+                sales.push(itemData);
+                alert('Nayi Sale entry save ho gayi!');
+            }
+        }
+
+        saveData();
+        resetForm();
+        renderAllData();
+    }
+
+    function deleteItem(type, id) {
+        if(confirm("Are you sure you want to delete this entry?")) {
+            if(type === 'purchase') {
+                purchases = purchases.filter(p => p.id !== id);
+                purchases.forEach((p, idx) => p.sno = idx + 1);
+            } else {
+                sales = sales.filter(s => s.id !== id);
+                sales.forEach((s, idx) => s.sno = idx + 1);
+            }
+            saveData();
+            renderAllData();
+        }
+    }
+
+    function formatDate(dStr) {
+        if(!dStr) return '';
+        const parts = dStr.split('-');
+        if(parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        return dStr;
+    }
+
+    function searchHomeStock() {
+        const query = (document.getElementById('home-search').value || '').toLowerCase().trim();
+        const resultsDiv = document.getElementById('home-search-results');
+
+        if (!query) {
+            resultsDiv.innerHTML = '';
+            return;
+        }
+
+        const stockMap = {};
+
+        purchases.forEach(p => {
+            const itemKey = p.item.toLowerCase().trim();
+            if (!stockMap[itemKey]) {
+                stockMap[itemKey] = { name: p.item, purQty: 0, purPrice: p.price, purAmt: 0, saleQty: 0, salePrice: 0, saleAmt: 0 };
+            }
+            stockMap[itemKey].purQty += p.qty;
+            stockMap[itemKey].purAmt += p.total;
+            stockMap[itemKey].purPrice = p.price;
+        });
+
+        sales.forEach(s => {
+            const itemKey = s.item.toLowerCase().trim();
+            if (!stockMap[itemKey]) {
+                stockMap[itemKey] = { name: s.item, purQty: 0, purPrice: 0, purAmt: 0, saleQty: 0, salePrice: s.price, saleAmt: 0 };
+            }
+            stockMap[itemKey].saleQty += s.qty;
+            stockMap[itemKey].saleAmt += s.total;
+            stockMap[itemKey].salePrice = s.price;
+        });
+
+        let html = '<table><thead><tr><th>Item Name</th><th>CP (₹)</th><th>SP (₹)</th><th>Pur Qty</th><th>Sale Qty</th><th>Stock Left</th><th>Net Profit</th></tr></thead><tbody>';
+        let found = false;
+
+        for (let key in stockMap) {
+            if (stockMap[key].name.toLowerCase().includes(query)) {
+                found = true;
+                const data = stockMap[key];
+                const rem = data.purQty - data.saleQty;
+                const soldCost = data.saleQty * data.purPrice;
+                const profit = data.saleAmt - soldCost;
+
+                const lowStockClass = rem <= 5 ? 'low-stock-alert' : '';
+                const profitClass = profit >= 0 ? 'profit-pos' : 'profit-neg';
+
+                html += `
+                    <tr class="${lowStockClass}">
+                        <td class="text-left">${data.name}</td>
+                        <td>₹ ${data.purPrice.toFixed(2)}</td>
+                        <td>₹ ${data.salePrice.toFixed(2)}</td>
+                        <td>${data.purQty}</td>
+                        <td>${data.saleQty}</td>
+                        <td><strong style="color:${rem <= 5 ? '#dc2626' : '#000'}">${rem}</strong> ${rem <= 5 ? '⚠️' : ''}</td>
+                        <td class="${profitClass}">₹ ${profit.toFixed(2)}</td>
+                    </tr>
+                `;
+            }
+        }
+
+        html += '</tbody></table>';
+
+        if (!found) {
+            resultsDiv.innerHTML = '<div class="empty-msg">No matching items in stock.</div>';
+        } else {
+            resultsDiv.innerHTML = html;
+        }
+    }
+
+    function renderAllData() {
+        updateFormMode();
+
+        // RENDER PURCHASES
+        const purTbody = document.getElementById('purchase-tbody');
+        let purQtySum = 0;
+        let purAmtSum = 0;
+
+        if (purchases.length === 0) {
+            purTbody.innerHTML = `<tr><td colspan="8" class="empty-msg">No purchase entries yet. Add entries from Home tab.</td></tr>`;
+        } else {
+            purTbody.innerHTML = purchases.map((p, index) => {
+                p.sno = index + 1;
+                purQtySum += p.qty;
+                purAmtSum += p.total;
+                return `
+                    <tr>
+                        <td>${p.sno}</td>
+                        <td>${formatDate(p.date)}</td>
+                        <td class="text-left">${p.item}</td>
+                        <td>${p.guaranty}</td>
+                        <td>₹ ${p.price.toFixed(2)}</td>
+                        <td>${p.qty}</td>
+                        <td class="text-right">₹ ${p.total.toFixed(2)}</td>
+                        <td><button class="del-btn" onclick="deleteItem('purchase', ${p.id})">Delete</button></td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        document.getElementById('pur-total-qty').innerText = purQtySum;
+        document.getElementById('pur-total-amt').innerText = `₹ ${purAmtSum.toFixed(2)}`;
+
+        // RENDER SALES
+        const saleTbody = document.getElementById('sale-tbody');
+        let saleQtySum = 0;
+        let saleAmtSum = 0;
+
+        if (sales.length === 0) {
+            saleTbody.innerHTML = `<tr><td colspan="8" class="empty-msg">No sale entries yet. Add entries from Home tab.</td></tr>`;
+        } else {
+            saleTbody.innerHTML = sales.map((s, index) => {
+                s.sno = index + 1;
+                saleQtySum += s.qty;
+                saleAmtSum += s.total;
+                return `
+                    <tr>
+                        <td>${s.sno}</td>
+                        <td>${formatDate(s.date)}</td>
+                        <td class="text-left">${s.item}</td>
+                        <td>${s.guaranty}</td>
+                        <td>₹ ${s.price.toFixed(2)}</td>
+                        <td>${s.qty}</td>
+                        <td class="text-right">₹ ${s.total.toFixed(2)}</td>
+                        <td><button class="del-btn" onclick="deleteItem('sale', ${s.id})">Delete</button></td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        document.getElementById('sale-total-qty').innerText = saleQtySum;
+        document.getElementById('sale-total-amt').innerText = `₹ ${saleAmtSum.toFixed(2)}`;
+
+        // RENDER STOCKS & NET PROFIT
+        const stockMap = {};
+
+        purchases.forEach(p => {
+            const itemKey = p.item.toLowerCase().trim();
+            if (!stockMap[itemKey]) {
+                stockMap[itemKey] = { name: p.item, date: p.date, purQty: 0, purPrice: p.price, purAmt: 0, saleQty: 0, salePrice: 0, saleAmt: 0 };
+            }
+            stockMap[itemKey].purQty += p.qty;
+            stockMap[itemKey].purAmt += p.total;
+            stockMap[itemKey].purPrice = p.price;
+            stockMap[itemKey].date = p.date;
+        });
+
+        sales.forEach(s => {
+            const itemKey = s.item.toLowerCase().trim();
+            if (!stockMap[itemKey]) {
+                stockMap[itemKey] = { name: s.item, date: s.date, purQty: 0, purPrice: 0, purAmt: 0, saleQty: 0, salePrice: s.price, saleAmt: 0 };
+            }
+            stockMap[itemKey].saleQty += s.qty;
+            stockMap[itemKey].saleAmt += s.total;
+            stockMap[itemKey].salePrice = s.price;
+        });
+
+        const stocksTbody = document.getElementById('stocks-tbody');
+        let index = 1;
+        let rowsHtml = '';
+        let totStockPur = 0;
+        let totStockPurAmt = 0;
+        let totStockSale = 0;
+        let totStockSaleAmt = 0;
+        let totStockRem = 0;
+        let totNetProfit = 0;
+
+        for (let key in stockMap) {
+            const data = stockMap[key];
+            const remainingStock = data.purQty - data.saleQty;
+            
+            // Net Profit Formula: Total Sale Amount - Cost Price of Sold Items
+            const soldCost = data.saleQty * data.purPrice;
+            const netProfit = data.saleAmt - soldCost;
+
+            totStockPur += data.purQty;
+            totStockPurAmt += data.purAmt;
+            totStockSale += data.saleQty;
+            totStockSaleAmt += data.saleAmt;
+            totStockRem += remainingStock;
+            totNetProfit += netProfit;
+
+            const isLowStock = remainingStock <= 5;
+            const alertClass = isLowStock ? 'low-stock-alert' : '';
+            const badgeHtml = isLowStock ? `<span class="stock-alert-badge">⚠️ Low Stock</span>` : '';
+            const profitClass = netProfit >= 0 ? 'profit-pos' : 'profit-neg';
+
+            rowsHtml += `
+                <tr class="${alertClass}">
+                    <td>${index++}</td>
+                    <td>${formatDate(data.date)}</td>
+                    <td class="text-left">${data.name}</td>
+                    <td>${data.purQty}</td>
+                    <td>₹ ${data.purPrice.toFixed(2)}</td>
+                    <td class="text-right">₹ ${data.purAmt.toFixed(2)}</td>
+                    <td>${data.saleQty}</td>
+                    <td>₹ ${data.salePrice.toFixed(2)}</td>
+                    <td class="text-right">₹ ${data.saleAmt.toFixed(2)}</td>
+                    <td>
+                        <strong style="color: ${remainingStock <= 5 ? '#dc2626' : '#000'}">${remainingStock}</strong>
+                        ${badgeHtml}
+                    </td>
+                    <td class="text-right ${profitClass}">₹ ${netProfit.toFixed(2)}</td>
+                </tr>
+            `;
+        }
+
+        stocksTbody.innerHTML = rowsHtml || `<tr><td colspan="11" class="empty-msg">No stock available. Add items to Purchase tab.</td></tr>`;
+        
+        document.getElementById('stock-total-pur').innerText = totStockPur;
+        document.getElementById('stock-total-pur-amt').innerText = `₹ ${totStockPurAmt.toFixed(2)}`;
+        document.getElementById('stock-total-sale').innerText = totStockSale;
+        document.getElementById('stock-total-sale-amt').innerText = `₹ ${totStockSaleAmt.toFixed(2)}`;
+        document.getElementById('stock-total-rem').innerHTML = `<strong>${totStockRem}</strong>`;
+        
+        const totProfitElem = document.getElementById('stock-total-profit');
+        totProfitElem.innerText = `₹ ${totNetProfit.toFixed(2)}`;
+        totProfitElem.className = `text-right ${totNetProfit >= 0 ? 'profit-pos' : 'profit-neg'}`;
+
+        searchHomeStock();
+    }
+
+    // --- NEW ADDED FEATURES (BINA PURANA CODE DISTURB KIYE) ---
+
+    // 1. Export to Excel (.xlsx) with 3 worksheets
+    function exportToExcel() {
+        const wb = XLSX.utils.book_new();
+
+        // Sheet 1: Purchases
+        const purData = purchases.map(p => ({
+            "S.No": p.sno,
+            "Date": p.date,
+            "Item Name": p.item,
+            "Guaranty": p.guaranty,
+            "Cost Price (INR)": p.price,
+            "Quantity": p.qty,
+            "Total Amount (INR)": p.total
+        }));
+        const wsPur = XLSX.utils.json_to_sheet(purData);
+        XLSX.utils.book_append_sheet(wb, wsPur, "Purchases");
+
+        // Sheet 2: Sales
+        const saleData = sales.map(s => ({
+            "S.No": s.sno,
+            "Date": s.date,
+            "Item Name": s.item,
+            "Guaranty": s.guaranty,
+            "Selling Price (INR)": s.price,
+            "Quantity": s.qty,
+            "Total Amount (INR)": s.total
+        }));
+        const wsSale = XLSX.utils.json_to_sheet(saleData);
+        XLSX.utils.book_append_sheet(wb, wsSale, "Sales");
+
+        // Sheet 3: Stocks & Net Profit
+        const stockMap = {};
+        purchases.forEach(p => {
+            const k = p.item.toLowerCase().trim();
+            if(!stockMap[k]) stockMap[k] = { name: p.item, purQty: 0, purPrice: p.price, purAmt: 0, saleQty: 0, salePrice: 0, saleAmt: 0 };
+            stockMap[k].purQty += p.qty;
+            stockMap[k].purAmt += p.total;
+            stockMap[k].purPrice = p.price;
+        });
+        sales.forEach(s => {
+            const k = s.item.toLowerCase().trim();
+            if(!stockMap[k]) stockMap[k] = { name: s.item, purQty: 0, purPrice: 0, purAmt: 0, saleQty: 0, salePrice: s.price, saleAmt: 0 };
+            stockMap[k].saleQty += s.qty;
+            stockMap[k].saleAmt += s.total;
+            stockMap[k].salePrice = s.price;
+        });
+
+        const stocksData = [];
+        let i = 1;
+        for(let key in stockMap) {
+            const d = stockMap[key];
+            const rem = d.purQty - d.saleQty;
+            const profit = d.saleAmt - (d.saleQty * d.purPrice);
+            stocksData.push({
+                "S.No": i++,
+                "Item Name": d.name,
+                "Purchase Qty": d.purQty,
+                "Cost Price": d.purPrice,
+                "Purchase Amt": d.purAmt,
+                "Sale Qty": d.saleQty,
+                "Selling Price": d.salePrice,
+                "Sale Amt": d.saleAmt,
+                "In Stock": rem,
+                "Net Profit (INR)": profit
+            });
+        }
+        const wsStocks = XLSX.utils.json_to_sheet(stocksData);
+        XLSX.utils.book_append_sheet(wb, wsStocks, "Stocks & Profit");
+
+        XLSX.writeFile(wb, `Suraj_Infotech_Stock_Report_${new Date().toISOString().slice(0,10)}.xlsx`);
+    }
+
+    // 2. Export PDF
+    function exportToPDF() {
+        window.print();
+    }
+
+    // 3. Backup JSON
+    function backupJSON() {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ purchases, sales }));
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", `Suraj_Infotech_Backup_${new Date().toISOString().slice(0,10)}.json`);
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+    }
+
+    // 4. Import JSON Backup
+    function importJSON(event) {
+        const fileReader = new FileReader();
+        fileReader.onload = function(e) {
+            try {
+                const imported = JSON.parse(e.target.result);
+                if (imported.purchases && imported.sales) {
+                    purchases = imported.purchases;
+                    sales = imported.sales;
+                    saveData();
+                    renderAllData();
+                    alert("JSON Backup dynamic loading successful!");
+                } else {
+                    alert("Invalid Backup file structure!");
+                }
+            } catch(err) {
+                alert("File parse karne me problem hui!");
+            }
+        };
+        fileReader.readAsText(event.target.files[0]);
+    }
+
+    // 5. Excel Import
+    function importExcel(event) {
+        const file = event.target.files[0];
+        if(!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, {type: 'array'});
+
+            if(workbook.SheetNames.includes("Purchases")) {
+                const sheet = workbook.Sheets["Purchases"];
+                const json = XLSX.utils.sheet_to_json(sheet);
+                purchases = json.map((row, idx) => ({
+                    id: Date.now() + idx,
+                    sno: idx + 1,
+                    date: row["Date"] || new Date().toISOString().slice(0,10),
+                    item: String(row["Item Name"] || '').toLowerCase().trim(),
+                    guaranty: row["Guaranty"] || 'N/A',
+                    price: parseFloat(row["Cost Price (INR)"] || row["Price"]) || 0,
+                    qty: parseInt(row["Quantity"]) || 0,
+                    total: (parseFloat(row["Cost Price (INR)"] || row["Price"]) || 0) * (parseInt(row["Quantity"]) || 0)
+                }));
+            }
+
+            if(workbook.SheetNames.includes("Sales")) {
+                const sheet = workbook.Sheets["Sales"];
+                const json = XLSX.utils.sheet_to_json(sheet);
+                sales = json.map((row, idx) => ({
+                    id: Date.now() + idx + 5000,
+                    sno: idx + 1,
+                    date: row["Date"] || new Date().toISOString().slice(0,10),
+                    item: String(row["Item Name"] || '').toLowerCase().trim(),
+                    guaranty: row["Guaranty"] || 'N/A',
+                    price: parseFloat(row["Selling Price (INR)"] || row["Price"]) || 0,
+                    qty: parseInt(row["Quantity"]) || 0,
+                    total: (parseFloat(row["Selling Price (INR)"] || row["Price"]) || 0) * (parseInt(row["Quantity"]) || 0)
+                }));
+            }
+
+            saveData();
+            renderAllData();
+            alert("Excel data successfully imported!");
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    // 6. WhatsApp Share Summary
+    function shareWhatsApp() {
+        const stockMap = {};
+        purchases.forEach(p => {
+            const k = p.item.toLowerCase().trim();
+            if(!stockMap[k]) stockMap[k] = { name: p.item, purQty: 0, purPrice: p.price, saleQty: 0, saleAmt: 0 };
+            stockMap[k].purQty += p.qty;
+            stockMap[k].purPrice = p.price;
+        });
+        sales.forEach(s => {
+            const k = s.item.toLowerCase().trim();
+            if(!stockMap[k]) stockMap[k] = { name: s.item, purQty: 0, purPrice: 0, saleQty: 0, saleAmt: 0 };
+            stockMap[k].saleQty += s.qty;
+            stockMap[k].saleAmt += s.total;
+        });
+
+        let totalProfit = 0;
+        let text = "*📊 Suraj Infotech - Stock & Net Profit Summary*\n\n";
+
+        for(let key in stockMap) {
+            const d = stockMap[key];
+            const rem = d.purQty - d.saleQty;
+            const profit = d.saleAmt - (d.saleQty * d.purPrice);
+            totalProfit += profit;
+            text += `🔹 *${d.name.toUpperCase()}*\n  - Stock Left: ${rem}\n  - Profit: ₹${profit.toFixed(2)}\n\n`;
+        }
+
+        text += `---------------------------\n💰 *Total Net Profit:* ₹${totalProfit.toFixed(2)}`;
+
+        const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+        window.open(url, '_blank');
+    }
+
+    renderAllData();
+    loadFromCloud();
+</script>
+
+</body>
+</html>
